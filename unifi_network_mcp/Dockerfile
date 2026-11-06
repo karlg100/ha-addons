@@ -8,7 +8,7 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/* \
  && pip install --no-cache-dir "unifi-network-mcp==${UNIFI_NETWORK_MCP_VERSION}"
 
-COPY run.sh /run.sh
+COPY run.sh preflight.py /
 RUN chmod a+x /run.sh
 
 # Lets Supervisor see when the server stops accepting connections and restart it.

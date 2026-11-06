@@ -76,5 +76,8 @@ export UNIFI_MCP_LOG_LEVEL
 echo "[unifi-network-mcp add-on] controller ${UNIFI_HOST} (site ${UNIFI_SITE}); allowed hosts: ${UNIFI_MCP_ALLOWED_HOSTS}"
 echo "[unifi-network-mcp add-on] writes: create=${UNIFI_POLICY_CREATE} update=${UNIFI_POLICY_UPDATE} delete=${UNIFI_POLICY_DELETE}"
 
+# Plain-language check of the controller login (one attempt, never blocks startup)
+python3 "$(dirname "$0")/preflight.py" || true
+
 # exec so the server is PID 1 and runs HTTP-only (see init: false in config.yaml)
 exec unifi-network-mcp

@@ -1,7 +1,8 @@
 name: UniFi Network MCP
 # Tracks the upstream unifi-network-mcp release pinned in the Dockerfile.
 # Bump both together; a new version here is what makes HA offer an update.
-version: "0.45.0"
+# A fourth number (0.45.0.1) marks an add-on-only change on the same upstream.
+version: "0.45.0.1"
 # Prebuilt, immutable image per version (published by .github/workflows/publish.yaml).
 # HA pulls <image>:<version> instead of building, which is what makes rolling
 # back by restoring a pre-update backup work. Remove this line to build locally.

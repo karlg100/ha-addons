@@ -48,6 +48,21 @@ Keep `Authorization:${AUTH_HEADER}` without spaces: Claude Desktop on Windows ma
 
 If you connect by IP instead of `homeassistant.local`, add that IP to `allowed_hosts`, or requests are refused with "Invalid Host header".
 
+## Troubleshooting
+
+At startup the add-on tries one login to your console and says in its **Log** tab whether it worked:
+
+| Log says | Fix |
+|---|---|
+| `login OK` | Nothing to fix on the UniFi side |
+| `login refused (HTTP 401/403): the password is incorrect…` | Retype the password (the field is masked, so typos hide), check the username, and make sure it's a **local** account with access to the Network app. Then restart the add-on |
+| `…two-factor authentication turned on` | Turn MFA off for this account, or create a separate local admin without it |
+| `…temporarily blocking logins` (HTTP 429) | Too many failed attempts. Wait 5–10 minutes and restart the add-on |
+| `could not reach the controller` | Check `controller_host` / `controller_port` |
+| `certificate doesn't match ssl_fingerprint` | The console's certificate changed. Update `ssl_fingerprint`, or check `controller_host` |
+
+If the connector in Claude shows errors like *"Not connected to controller … Forbidden"*, it's the same login problem: check this log first.
+
 ## Updating and rolling back
 
 Every version of this add-on is published as its own image (`ghcr.io/karlg100/<arch>-addon-unifi-network-mcp:<version>`), and published versions are never overwritten or deleted. That is what makes rollback work:
