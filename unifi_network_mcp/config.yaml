@@ -1,0 +1,51 @@
+name: UniFi Network MCP
+# Tracks the upstream unifi-network-mcp release pinned in the Dockerfile.
+# Bump both together; a new version here is what makes HA offer an update.
+version: "0.45.0"
+slug: unifi_network_mcp
+description: MCP server for UniFi Network (sirkirby/unifi-mcp), so Claude can monitor and manage your UniFi network
+url: https://github.com/karlg100/ha-addons/tree/main/unifi_network_mcp
+arch:
+  - aarch64
+  - amd64
+# The server runs HTTP-only when it is PID 1. With HA's init (tini) in front
+# it isn't, and it then exits as soon as it sees stdin closed. Keep init off;
+# run.sh execs the server so it becomes PID 1.
+init: false
+startup: application
+boot: auto
+watchdog: tcp://[HOST]:[PORT:3000]
+ports:
+  3000/tcp: 3000
+ports_description:
+  3000/tcp: MCP endpoint (/mcp) — LAN only, never port-forward
+options:
+  controller_host: 192.168.1.1
+  username: claude-mcp
+  password: ""
+  site: default
+  verify_ssl: false
+  api_key: ""
+  auth_token: ""
+  allowed_hosts:
+    - homeassistant.local
+  allow_create: false
+  allow_update: false
+  allow_delete: false
+  log_level: info
+schema:
+  controller_host: str
+  controller_port: port?
+  username: str
+  password: password
+  site: str
+  verify_ssl: bool
+  ssl_fingerprint: str?
+  api_key: password?
+  auth_token: password
+  allowed_hosts:
+    - str
+  allow_create: bool
+  allow_update: bool
+  allow_delete: bool
+  log_level: list(debug|info|warning|error)

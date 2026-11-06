@@ -1,0 +1,44 @@
+configuration:
+  controller_host:
+    name: Controller address
+    description: IP or hostname of your UniFi console (e.g. the UDM's LAN IP).
+  controller_port:
+    name: Controller port
+    description: HTTPS port of the console. Leave empty for 443.
+  username:
+    name: Username
+    description: A dedicated local admin account on the console. Not a Ubiquiti SSO account, and without MFA/2FA.
+  password:
+    name: Password
+    description: Password for that local account.
+  site:
+    name: Site
+    description: UniFi site name. Usually "default".
+  verify_ssl:
+    name: Verify SSL
+    description: Leave off unless your console has a trusted certificate.
+  ssl_fingerprint:
+    name: Certificate fingerprint (optional)
+    description: SHA-256 fingerprint of the console's certificate. Pins it so the connection is verified even with a self-signed cert; overrides Verify SSL.
+  api_key:
+    name: API key (optional)
+    description: UniFi Integration API key. Unlocks a few extra features (e.g. DPI lookups, firewall policy ordering).
+  auth_token:
+    name: MCP bearer token
+    description: Shared secret Claude must send as "Authorization Bearer". At least 32 characters; generate with `openssl rand -hex 32`.
+  allowed_hosts:
+    name: Allowed hostnames
+    description: Hostnames or IPs Claude uses to reach this add-on (Host-header allowlist). Add your HA IP if you connect by IP.
+  allow_create:
+    name: Allow creating things
+    description: Let Claude create rules, networks, vouchers, etc. Every change still needs a preview and confirmation.
+  allow_update:
+    name: Allow changing things
+    description: Let Claude modify existing settings. Every change still needs a preview and confirmation.
+  allow_delete:
+    name: Allow deleting things
+    description: Let Claude delete items. Every change still needs a preview and confirmation.
+  log_level:
+    name: Log level
+network:
+  3000/tcp: MCP endpoint (http://<ha-host>:3000/mcp)

@@ -1,0 +1,20 @@
+name: Lint add-ons
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        addon: [unifi_network_mcp]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Home Assistant add-on linter
+        uses: frenck/action-addon-linter@v2
+        with:
+          path: "./${{ matrix.addon }}"
+      - name: ShellCheck
+        run: shellcheck ${{ matrix.addon }}/run.sh
