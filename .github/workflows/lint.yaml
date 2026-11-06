@@ -1,8 +1,9 @@
-name: Lint add-ons
+name: CI
 
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   lint:
@@ -17,4 +18,11 @@ jobs:
         with:
           path: "./${{ matrix.addon }}"
       - name: ShellCheck
-        run: shellcheck ${{ matrix.addon }}/run.sh
+        run: shellcheck ${{ matrix.addon }}/run.sh .github/scripts/*.sh
+
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and start the add-on the way HA runs it
+        run: sh .github/scripts/smoke-test.sh

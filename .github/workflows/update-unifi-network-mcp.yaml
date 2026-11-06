@@ -1,0 +1,73 @@
+name: Update unifi-network-mcp
+
+# sirkirby/unifi-mcp is someone else's repo, so its releases can't trigger
+# this workflow directly. Poll PyPI, where releases are published, daily.
+# "Run workflow" on the Actions tab checks right away.
+on:
+  schedule:
+    - cron: "23 11 * * *"   # daily, ~6-7am Eastern
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: update-unifi-network-mcp
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check PyPI and bump versions
+        id: bump
+        run: sh .github/scripts/bump-unifi-network-mcp.sh
+
+      - name: Smoke-test the new image
+        id: smoke
+        if: steps.bump.outputs.changed == 'true'
+        continue-on-error: true
+        run: sh .github/scripts/smoke-test.sh
+
+      - name: Open or update the pull request
+        id: pr
+        if: steps.bump.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          # One fixed branch: a newer release updates the open PR
+          # instead of opening another one.
+          branch: update/unifi-network-mcp
+          delete-branch: true
+          commit-message: Update unifi-network-mcp to ${{ steps.bump.outputs.latest }}
+          title: "Update unifi-network-mcp ${{ steps.bump.outputs.current }} → ${{ steps.bump.outputs.latest }}"
+          labels: dependencies, ${{ steps.bump.outputs.bump }}
+          draft: ${{ steps.smoke.outcome != 'success' }}
+          body: |
+            New upstream release of `unifi-network-mcp`: **${{ steps.bump.outputs.current }} → ${{ steps.bump.outputs.latest }}** (${{ steps.bump.outputs.bump }}).
+
+            | | |
+            |---|---|
+            | Smoke test | ${{ steps.smoke.outcome == 'success' && '✅ passed' || '❌ failed — see the workflow log; this PR is a draft' }} |
+            | Requires Python | `${{ steps.bump.outputs.requires_python }}` (image uses 3.13) |
+            | PyPI | https://pypi.org/project/unifi-network-mcp/${{ steps.bump.outputs.latest }}/ |
+            | Upstream changelog | https://github.com/sirkirby/unifi-mcp/blob/main/CHANGELOG.md |
+
+            Merging bumps the add-on version, so Home Assistant offers the update on its next repository refresh (or after **Add-on Store → ⋮ → Check for updates**).
+
+            Before merging, skim the upstream changelog for:
+            - changed or removed permission/policy settings (`UNIFI_POLICY_*`, `UNIFI_*_READ_ONLY`)
+            - transport or authentication changes (HTTP, bearer token, allowed hosts)
+            - new required configuration
+
+      - name: Auto-merge patch releases (opt-in)
+        if: >-
+          steps.pr.outputs.pull-request-number &&
+          vars.AUTO_MERGE_PATCH == 'true' &&
+          steps.bump.outputs.bump == 'patch' &&
+          steps.smoke.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh pr merge "${{ steps.pr.outputs.pull-request-number }}" --squash --delete-branch
