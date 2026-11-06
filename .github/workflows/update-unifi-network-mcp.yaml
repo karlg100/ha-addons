@@ -11,14 +11,25 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  packages: write
+  actions: write
 
 concurrency:
   group: update-unifi-network-mcp
   cancel-in-progress: false
 
+env:
+  BRANCH: update/unifi-network-mcp
+
 jobs:
   update:
     runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.bump.outputs.changed }}
+      latest: ${{ steps.bump.outputs.latest }}
+      bump: ${{ steps.bump.outputs.bump }}
+      smoke: ${{ steps.smoke.outcome }}
+      pr: ${{ steps.pr.outputs.pull-request-number }}
     steps:
       - uses: actions/checkout@v4
 
@@ -39,7 +50,7 @@ jobs:
         with:
           # One fixed branch: a newer release updates the open PR
           # instead of opening another one.
-          branch: update/unifi-network-mcp
+          branch: ${{ env.BRANCH }}
           delete-branch: true
           commit-message: Update unifi-network-mcp to ${{ steps.bump.outputs.latest }}
           title: "Update unifi-network-mcp ${{ steps.bump.outputs.current }} → ${{ steps.bump.outputs.latest }}"
@@ -50,24 +61,42 @@ jobs:
 
             | | |
             |---|---|
-            | Smoke test | ${{ steps.smoke.outcome == 'success' && '✅ passed' || '❌ failed — see the workflow log; this PR is a draft' }} |
+            | Smoke test | ${{ steps.smoke.outcome == 'success' && '✅ passed' || '❌ failed — see the workflow log; this PR is a draft and no images were published' }} |
+            | Images | ${{ steps.smoke.outcome == 'success' && 'Being published by the "Publish images" job of this run; wait for it to finish before merging' || 'Not published' }} |
             | Requires Python | `${{ steps.bump.outputs.requires_python }}` (image uses 3.13) |
             | PyPI | https://pypi.org/project/unifi-network-mcp/${{ steps.bump.outputs.latest }}/ |
             | Upstream changelog | https://github.com/sirkirby/unifi-mcp/blob/main/CHANGELOG.md |
 
-            Merging bumps the add-on version, so Home Assistant offers the update on its next repository refresh (or after **Add-on Store → ⋮ → Check for updates**).
+            Merging bumps the add-on version, so Home Assistant offers the update on its next repository refresh (or after **Add-on Store → ⋮ → Check for updates**). Tick **Create backup** in HA's update dialog so you can roll back.
 
             Before merging, skim the upstream changelog for:
             - changed or removed permission/policy settings (`UNIFI_POLICY_*`, `UNIFI_*_READ_ONLY`)
             - transport or authentication changes (HTTP, bearer token, allowed hosts)
             - new required configuration
 
-      - name: Auto-merge patch releases (opt-in)
-        if: >-
-          steps.pr.outputs.pull-request-number &&
-          vars.AUTO_MERGE_PATCH == 'true' &&
-          steps.bump.outputs.bump == 'patch' &&
-          steps.smoke.outcome == 'success'
+  # Publish the new version's images from the PR branch before merge, so HA
+  # never sees a version whose image doesn't exist yet. Unmerged versions are
+  # harmless: HA only ever asks for the version on main.
+  publish:
+    needs: update
+    if: needs.update.outputs.changed == 'true' && needs.update.outputs.smoke == 'success'
+    uses: ./.github/workflows/publish.yaml
+    with:
+      ref: update/unifi-network-mcp
+
+  automerge:
+    needs: [update, publish]
+    if: >-
+      needs.update.outputs.pr &&
+      vars.AUTO_MERGE_PATCH == 'true' &&
+      needs.update.outputs.bump == 'patch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auto-merge patch release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh pr merge "${{ steps.pr.outputs.pull-request-number }}" --squash --delete-branch
+        run: |
+          gh pr merge "${{ needs.update.outputs.pr }}" --repo "$GITHUB_REPOSITORY" --squash --delete-branch
+          # A merge made with this workflow's token doesn't fire the push-triggered
+          # publish run, so start it explicitly to tag and release the version.
+          gh workflow run publish.yaml --repo "$GITHUB_REPOSITORY" --ref main

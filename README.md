@@ -16,4 +16,4 @@ Click the button above, or in Home Assistant go to **Settings → Add-ons → Ad
 https://github.com/karlg100/ha-addons
 ```
 
-The add-on is built on your Home Assistant host on first install, so the first install takes a few minutes.
+Each version is published as a prebuilt image, so installs and updates are a quick download, and older versions stay available for rollback (see the add-on's Documentation tab).

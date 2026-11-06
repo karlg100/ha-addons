@@ -2,6 +2,10 @@ name: UniFi Network MCP
 # Tracks the upstream unifi-network-mcp release pinned in the Dockerfile.
 # Bump both together; a new version here is what makes HA offer an update.
 version: "0.45.0"
+# Prebuilt, immutable image per version (published by .github/workflows/publish.yaml).
+# HA pulls <image>:<version> instead of building, which is what makes rolling
+# back by restoring a pre-update backup work. Remove this line to build locally.
+image: "ghcr.io/karlg100/{arch}-addon-unifi-network-mcp"
 slug: unifi_network_mcp
 description: MCP server for UniFi Network (sirkirby/unifi-mcp), so Claude can monitor and manage your UniFi network
 url: https://github.com/karlg100/ha-addons/tree/main/unifi_network_mcp

@@ -46,6 +46,15 @@ Add this to `claude_desktop_config.json`, replacing the token:
 
 Restart Claude Desktop and ask it to list your UniFi devices.
 
+## Updating and rolling back
+
+Every version of this add-on is published as its own image (`ghcr.io/karlg100/<arch>-addon-unifi-network-mcp:<version>`), and published versions are never overwritten or deleted. That is what makes rollback work:
+
+1. When you update, leave **Create backup** ticked in the update dialog (or take a partial backup of just this add-on first).
+2. To roll back, go to **Settings → System → Backups**, open that backup, and restore only this add-on. Home Assistant pulls the image for the version recorded in the backup and restores your options with it.
+
+Each version also has a matching GitHub release (`unifi_network_mcp-v<version>`) with its changelog and source.
+
 ## Security notes
 
 - The endpoint is plain HTTP on your LAN, protected by the bearer token and the Host allowlist. **Do not port-forward 3000** or expose it through Nabu Casa.

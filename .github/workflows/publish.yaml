@@ -1,0 +1,69 @@
+name: Publish add-on images
+
+# Publishes ghcr.io/<owner>/<arch>-addon-unifi-network-mcp:<version> for each
+# arch, plus a git tag and GitHub release for each version merged to main.
+# Existing version tags are never overwritten, so every release stays
+# pullable and restoring a pre-update backup in HA rolls back cleanly.
+on:
+  push:
+    branches: [main]
+    paths: ["unifi_network_mcp/**"]
+  workflow_dispatch:
+  # Called by the update workflow to publish a new version's images *before*
+  # its PR is merged, so HA never sees a version whose image doesn't exist yet.
+  workflow_call:
+    inputs:
+      ref:
+        description: Branch or SHA to build
+        type: string
+        required: true
+
+permissions:
+  contents: write
+  packages: write
+
+concurrency:
+  group: publish-${{ inputs.ref || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push images (skips versions already published)
+        id: images
+        run: sh .github/scripts/publish-images.sh
+
+      # Only for what's actually on main, not for a PR branch being pre-published.
+      - name: Tag and create the release
+        if: inputs.ref == '' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.images.outputs.version }}
+        run: |
+          tag="unifi_network_mcp-v$VERSION"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release $tag already exists."
+            exit 0
+          fi
+          # This version's section of the changelog becomes the release notes.
+          awk -v v="$VERSION" '
+            $0 == "## " v { on = 1; next }
+            on && /^## / { exit }
+            on { print }
+          ' unifi_network_mcp/CHANGELOG.md > notes.md
+          gh release create "$tag" --target "$GITHUB_SHA" \
+            --title "UniFi Network MCP $VERSION" --notes-file notes.md
