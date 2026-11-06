@@ -36,15 +36,17 @@ Add this to `claude_desktop_config.json`, replacing the token:
         "-y", "mcp-remote",
         "http://homeassistant.local:3000/mcp",
         "--allow-http",
-        "--header", "Authorization: Bearer ${UNIFI_MCP_TOKEN}"
+        "--header", "Authorization:${AUTH_HEADER}"
       ],
-      "env": { "UNIFI_MCP_TOKEN": "paste-your-token-here" }
+      "env": { "AUTH_HEADER": "Bearer paste-your-token-here" }
     }
   }
 }
 ```
 
-Restart Claude Desktop and ask it to list your UniFi devices.
+Keep `Authorization:${AUTH_HEADER}` without spaces: Claude Desktop on Windows mangles spaces inside `args`, and the space-free form works everywhere. Fully quit and reopen Claude Desktop, then ask it to list your UniFi devices.
+
+If you connect by IP instead of `homeassistant.local`, add that IP to `allowed_hosts`, or requests are refused with "Invalid Host header".
 
 ## Updating and rolling back
 
