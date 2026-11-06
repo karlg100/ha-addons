@@ -7,7 +7,7 @@ version: "0.45.0"
 # back by restoring a pre-update backup work. Remove this line to build locally.
 image: "ghcr.io/karlg100/{arch}-addon-unifi-network-mcp"
 slug: unifi_network_mcp
-description: MCP server for UniFi Network (sirkirby/unifi-mcp), so Claude can monitor and manage your UniFi network
+description: Let Claude (or any MCP client) monitor and manage your UniFi network — read-only by default
 url: https://github.com/karlg100/ha-addons/tree/main/unifi_network_mcp
 arch:
   - aarch64
