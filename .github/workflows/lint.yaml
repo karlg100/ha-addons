@@ -12,7 +12,7 @@ jobs:
       matrix:
         addon: [unifi_network_mcp]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Home Assistant add-on linter
         uses: frenck/action-addon-linter@v2
         with:
@@ -23,6 +23,6 @@ jobs:
   smoke-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Build and start the add-on the way HA runs it
         run: sh .github/scripts/smoke-test.sh

@@ -16,9 +16,6 @@ arch:
 # it isn't, and it then exits as soon as it sees stdin closed. Keep init off;
 # run.sh execs the server so it becomes PID 1.
 init: false
-startup: application
-boot: auto
-watchdog: tcp://[HOST]:[PORT:3000]
 ports:
   3000/tcp: 3000
 ports_description:

@@ -11,4 +11,8 @@ RUN apt-get update \
 COPY run.sh /run.sh
 RUN chmod a+x /run.sh
 
+# Lets Supervisor see when the server stops accepting connections and restart it.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+  CMD python3 -c "import socket; socket.create_connection(('127.0.0.1', 3000), 3).close()"
+
 CMD ["/run.sh"]

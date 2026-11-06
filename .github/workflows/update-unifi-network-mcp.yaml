@@ -31,7 +31,7 @@ jobs:
       smoke: ${{ steps.smoke.outcome }}
       pr: ${{ steps.pr.outputs.pull-request-number }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Check PyPI and bump versions
         id: bump
