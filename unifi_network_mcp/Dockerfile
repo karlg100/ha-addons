@@ -1,7 +1,7 @@
 # Multi-arch Python base; unifi-network-mcp requires Python 3.13+.
 FROM python:3.13-slim
 
-ARG UNIFI_NETWORK_MCP_VERSION=0.45.0
+ARG UNIFI_NETWORK_MCP_VERSION=0.45.1
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends jq \
