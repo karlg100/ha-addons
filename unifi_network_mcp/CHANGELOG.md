@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.45.1
+
+- Update `unifi-network-mcp` from 0.45.0 to 0.45.1.
+  See the [upstream changelog](https://github.com/sirkirby/unifi-mcp/blob/main/CHANGELOG.md).
+
 ## 0.45.0.1
 
 - Startup now checks the UniFi login once and explains the result in the log in plain words: wrong password or non-local account, two-factor turned on, controller lockout, unreachable address, or a certificate that doesn't match `ssl_fingerprint`.
