@@ -46,7 +46,7 @@ jobs:
       - name: Open or update the pull request
         id: pr
         if: steps.bump.outputs.changed == 'true'
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           # One fixed branch: a newer release updates the open PR
           # instead of opening another one.
@@ -73,6 +73,11 @@ jobs:
             - changed or removed permission/policy settings (`UNIFI_POLICY_*`, `UNIFI_*_READ_ONLY`)
             - transport or authentication changes (HTTP, bearer token, allowed hosts)
             - new required configuration
+
+      - name: Explain a failed pull request
+        if: failure() && steps.pr.outcome == 'failure'
+        run: |
+          echo "::error title=Can't open the update PR::The new version was bumped and smoke-tested, and branch ${BRANCH} was pushed, but GitHub refused to open the pull request. If the error above says Actions isn't permitted to create pull requests, turn on Settings → Actions → General → Workflow permissions → 'Allow GitHub Actions to create and approve pull requests', then re-run this workflow."
 
   # Publish the new version's images from the PR branch before merge, so HA
   # never sees a version whose image doesn't exist yet. Unmerged versions are
