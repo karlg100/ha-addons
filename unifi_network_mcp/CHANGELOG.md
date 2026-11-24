@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.50.3
+
+- Update `unifi-network-mcp` from 0.45.1 to 0.50.3.
+  See the [upstream changelog](https://github.com/sirkirby/unifi-mcp/blob/main/CHANGELOG.md).
+
 ## 0.45.1
 
 - Update `unifi-network-mcp` from 0.45.0 to 0.45.1.
